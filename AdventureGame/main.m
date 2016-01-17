@@ -9,10 +9,14 @@ int main(int argc, const char * argv[]) {
     @autoreleasepool {
         
         GameController *game = [[GameController alloc] init];
+        NSString *playerName = [game inputPrompt:@"You are about to embark on a journey of greed, what should I call you? \nName:"];
+//        [game getName:playerName];
+        
         
         [game printPath];
         
         while (true) {
+            
             [game printHowFarHealthWealthExit];
             if ([game didPlayerWin]) {
                 NSLog(@"You WON!!!");

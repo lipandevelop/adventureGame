@@ -7,7 +7,7 @@
 
 @implementation PathSegment
 
-- (instancetype)initWithContent:(PathSegmentContent *)content {
+- (instancetype)initWithContent:(PathSegmentContents *)content {
     self = [super init];
     if (self) {
         _content = content;

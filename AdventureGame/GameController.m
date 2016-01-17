@@ -5,6 +5,7 @@
 
 #import "GameController.h"
 #import "Player.h"
+#import "PathSegmentContents.h"
 
 
 @interface GameController ()
@@ -15,7 +16,6 @@
 @end
 
 @implementation GameController
-
 
 
 - (instancetype)init
@@ -41,7 +41,7 @@
     
     for (int i = 0; i < 100; i++) {
         
-        PathSegmentContent *randContent = [self randomContent];
+        PathSegmentContents *randContent = [self randomContent];
         
         if (mainBranchCursor != nil) {
             // append to main branch
@@ -73,9 +73,24 @@
 }
 
 
--(PathSegmentContent *)randomContent {
+-(PathSegmentContents *)randomContent {
+    PathSegmentContents *generatedContent;
+    int random = arc4random_uniform(8);
+    if (random <4) {
+        if (arc4random_uniform(2)==0) {
+            generatedContent.treasure = YES;
+            
+        }
+        else {
+            generatedContent.creature = YES;
+        }
+    }
+    else if (random >=4) {
+        generatedContent.nothing = YES;
+    }
     
-    return nil;
+    
+    return generatedContent;
 }
 
 
@@ -141,29 +156,56 @@
                 return;
             
             if (self.player.pathSegment.mainRoad) {
+                int wealthGained = arc4random_uniform(16)+7;
+                int healthLost = arc4random_uniform(22)+9;
                 self.segmentsTravelled++;
                 self.player.pathSegment = self.player.pathSegment.mainRoad;
+                if ((self.player.pathSegment.content.treasure = YES)) {
+                    self.player.wealth += wealthGained;
+                    NSLog(@"You found some gold! Wealth +%d", wealthGained);
+                }
+                if ((self.player.pathSegment.content.creature = YES)) {
+                    self.player.health -=healthLost;
+                    NSLog(@"You encountered a monster! Health -%d", healthLost);
+                }
+                if ((self.player.pathSegment.content.nothing = YES)) {
+                    self.player.health +=1;
+                    NSLog(@"You have recovered a bit! Health +1");
+                }
+                break;
+                
+            case MovementDirectionSide:
+                if (!self.player.pathSegment.sideBranch)
+                    return;
+                
+                if (self.player.pathSegment.sideBranch) {
+                    int wealthGained = arc4random_uniform(16)+7;
+                    int healthLost = arc4random_uniform(22)+9;
+                    self.segmentsTravelled++;
+                    self.player.pathSegment = self.player.pathSegment.sideBranch;
+                    if ((self.player.pathSegment.content.treasure = YES)) {
+                        self.player.wealth += wealthGained;
+                        NSLog(@"You found some gold! Wealth +%d", wealthGained);
+                    }
+                    if ((self.player.pathSegment.content.creature = YES)) {
+                        self.player.health -=healthLost;
+                        NSLog(@"You encountered a monster! Health -%d", healthLost);
+                    }
+                    if ((self.player.pathSegment.content.nothing = YES)) {
+                        self.player.health +=1;
+                        NSLog(@"You have recovered a bit! Health +1");
+                    }
+                }
+                
+            default:
+                break;
             }
-            break;
-  
-        case MovementDirectionSide:
-            if (!self.player.pathSegment.sideBranch)
-                return;
-            
-            if (self.player.pathSegment.sideBranch) {
-                self.segmentsTravelled++;
-                self.player.pathSegment = self.player.pathSegment.sideBranch;
-            }
-            break;
-        default:
-            break;
     }
     
 }
 
 -(NSString *)inputPrompt: (NSString *)prompt {
     char inputChar[100];
-    //scanf("%c",inputChar);
     NSLog(@"%@", prompt);
     fgets(inputChar, 100, stdin);
     NSString *input = [NSString stringWithUTF8String:inputChar];
@@ -191,10 +233,9 @@
 -(BOOL)didPlayerWin {
     return (self.player.wealth >= 1000) || (!self.player.pathSegment.mainRoad && !self.player.pathSegment.sideBranch);
 }
+-(NSString *)getName: (NSString *)playerNameEntered {
+    return playerNameEntered;
+}
 
-// This a getter that messes up self. if self. used instead of underscore
-//-(Player *)getPlayer {
-//    return nil;
-//}
 
 @end

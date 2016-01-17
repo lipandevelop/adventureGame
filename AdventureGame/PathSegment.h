@@ -4,14 +4,14 @@
 
 #import <Foundation/Foundation.h>
 
-@class PathSegmentContent;
+@class PathSegmentContents;
 
 @interface PathSegment : NSObject
 
-@property (nonatomic, strong) PathSegmentContent *content;
+@property (nonatomic, strong) PathSegmentContents *content;
 @property (nonatomic, strong) PathSegment *mainRoad;
 @property (nonatomic, strong) PathSegment *sideBranch;
 
-- (instancetype)initWithContent:(PathSegmentContent *)content;
+- (instancetype)initWithContent:(PathSegmentContents *)content;
 
 @end

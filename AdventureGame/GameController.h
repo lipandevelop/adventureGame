@@ -5,7 +5,6 @@
 
 #import <Foundation/Foundation.h>
 #import "PathSegment.h"
-#import "PathSegmentContent.h"
 
 typedef NS_ENUM(NSInteger, MovementDirection) {
     MovementDirectionMain,
@@ -20,6 +19,8 @@ typedef NS_ENUM(NSInteger, MovementDirection) {
 
 -(void)printPath;
 
+-(PathSegmentContents *)randomContent;
+
 -(NSString *)inputPrompt: (NSString *)prompt;
 
 -(void)moveUsingMovementDirection: (MovementDirection)movementDirection;
@@ -33,5 +34,8 @@ typedef NS_ENUM(NSInteger, MovementDirection) {
 -(BOOL)isPlayerAlive;
 
 -(BOOL)didPlayerWin;
+
+-(NSString *)getName: (NSString *)playerNameEntered;
+
 
 @end

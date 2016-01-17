@@ -13,7 +13,7 @@
 -(instancetype)init {
     self = [super init];
     if (self) {
-        _health = 100;
+        _health = 1000;
     }
     return self;
 }
