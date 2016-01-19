@@ -13,6 +13,9 @@
 @property (nonatomic, strong) PathSegment *pathSegment;
 @property (nonatomic, assign) NSInteger health;
 @property (nonatomic, assign) NSInteger wealth;
+@property (nonatomic, assign) int hammerDurability;
+@property (nonatomic, assign) BOOL vitalityPotion;
+@property (nonatomic, assign) int healthCoefficient;
 
 
 

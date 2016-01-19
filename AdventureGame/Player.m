@@ -14,6 +14,10 @@
     self = [super init];
     if (self) {
         _health = 1000;
+        _wealth = 200;
+        _hammerDurability = 30;
+        _vitalityPotion = NO;
+        _healthCoefficient = 9;
     }
     return self;
 }

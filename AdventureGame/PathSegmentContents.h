@@ -13,6 +13,8 @@
 @property (nonatomic, assign) BOOL treasure;
 @property (nonatomic, assign) BOOL creature;
 @property (nonatomic, assign) BOOL nothing;
+@property (nonatomic, assign) BOOL merchant;
+@property (nonatomic, assign) BOOL crystal;
 
 
 @end

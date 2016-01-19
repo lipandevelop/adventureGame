@@ -12,6 +12,7 @@
 
 @property (nonatomic, strong) Player *player;
 @property (nonatomic, assign) NSInteger segmentsTravelled;
+@property (nonatomic, assign) int segmentsLaid;
 
 @end
 
@@ -41,7 +42,7 @@
     
     for (int i = 0; i < 100; i++) {
         
-        PathSegmentContents *randContent = [self randomContent];
+        PathSegmentContents *randContent = [self randomContentForI:i];
         
         if (mainBranchCursor != nil) {
             // append to main branch
@@ -73,10 +74,10 @@
 }
 
 
--(PathSegmentContents *)randomContent {
+-(PathSegmentContents *)randomContentForI:(int)i {
     PathSegmentContents *generatedContent;
-    int random = arc4random_uniform(8);
-    if (random <4) {
+    int random = arc4random_uniform(99);
+    if (random <20) {
         if (arc4random_uniform(2)==0) {
             generatedContent.treasure = YES;
             
@@ -84,11 +85,21 @@
         else {
             generatedContent.creature = YES;
         }
+        
+        if (i == 50) {
+            generatedContent.merchant = YES;
+        }
+        int lowerbound = 50;
+        int higherbound = 70;
+        int rndvalue = lowerbound + arc4random() % (higherbound);
+        if (i == rndvalue) {
+            generatedContent.crystal = YES;
+        }
+        
     }
-    else if (random >=4) {
+    else {
         generatedContent.nothing = YES;
     }
-    
     
     return generatedContent;
 }
@@ -146,7 +157,7 @@
     else {
         exitAvailable = @"NO";
     }
-    NSLog(@"How Far: %ld steps Health: %ld Wealth: %ld Exit: %@", self.segmentsTravelled, self.player.health, self.player.wealth, exitAvailable);
+    NSLog(@"How Far: %ld steps Health: %ld Wealth: %ld Exit: %@ Hammer Durability: %d", self.segmentsTravelled, self.player.health, self.player.wealth, exitAvailable, self.player.hammerDurability);
 }
 
 -(void)moveUsingMovementDirection: (MovementDirection)movementDirection {
@@ -157,22 +168,69 @@
             
             if (self.player.pathSegment.mainRoad) {
                 int wealthGained = arc4random_uniform(16)+7;
-                int healthLost = arc4random_uniform(22)+9;
+                int healthLost = arc4random_uniform(22)+(self.player.healthCoefficient);
                 self.segmentsTravelled++;
                 self.player.pathSegment = self.player.pathSegment.mainRoad;
                 if ((self.player.pathSegment.content.treasure = YES)) {
-                    self.player.wealth += wealthGained;
-                    NSLog(@"You found some gold! Wealth +%d", wealthGained);
+                    NSString *userCommand = [self inputPrompt:@"You came across a treasure chest! type \"yes\" to open it it your hammer."];
+                    if ([userCommand isEqualToString:@"yes"]) {
+                        if (self.player.hammerDurability <= 0) {
+                            NSLog(@"Your hammer is worn out, you have to just continue");
+                        }
+                        else {
+                            self.player.wealth += wealthGained;
+                            self.player.hammerDurability -= 1;
+                            NSLog(@"You found some gold! Wealth +%d, your worn out your hammer a bit", wealthGained);
+                        }
+                    }
+                    
                 }
                 if ((self.player.pathSegment.content.creature = YES)) {
-                    self.player.health -=healthLost;
-                    NSLog(@"You encountered a monster! Health -%d", healthLost);
+                    NSString *userCommand = [self inputPrompt:@"You've encountered a merchant, you can buy the following:\nType \"V\" for Vitality Potion for 200gold, it gives you 33% of healing 10 health every step you don't encounter anything.\nType \"N\"New Hammer for 500gold\nType \"A\"Armor for 400 gold, it reduces the damage you take from monsters\nType \"q\" to buy nothing"];
+                    if ([userCommand isEqualToString:@"v"]) {
+                        self.player.vitalityPotion = YES;
+                        NSLog(@"You've purchased a Viltality Potion!");
+                    }
+                    if ([userCommand isEqualToString:@"n"]) {
+                        self.player.hammerDurability = 30;
+                        NSLog(@"You've purchased a New Hammer!");
+                    }
+                    if ([userCommand isEqualToString:@"a"]) {
+                        self.player.healthCoefficient = 13;
+                        NSLog(@"You've purchased a suit of Armor!");
+                    }
+                    if ((self.player.pathSegment.content.creature = YES)) {
+                        NSString *userCommand = [self inputPrompt:@"You came across a monster! Type \"yes\" to fight it with your hammer."];
+                        if ([userCommand isEqualToString:@"yes"]) {
+                            if (self.player.hammerDurability <= 0) {
+                                NSLog(@"Your hammer is worn out, you've lost %d health trying to run from it.", healthLost);
+                                self.player.health -=healthLost;
+                            }
+                            else {
+                                self.player.hammerDurability -= 1;
+                                NSLog(@"You defeated the monster, you've worn out your hammer a bit");
+                            }
+                        }
+                        
+                        else {
+                            self.player.health -=healthLost;
+                            NSLog(@"You encountered a monster! Health -%d", healthLost);}
+                        
+                    }
+                    if ((self.player.pathSegment.content.nothing = YES)) {
+                        if ((self.player.vitalityPotion = YES)) {
+                            int r = arc4random_uniform(2);
+                            if (r == 0) {
+                                self.player.health +=10;
+                                NSLog(@"You have recovered a bit! Health +10");
+                            }
+                            
+                        }
+                        
+                    }
+                    break;
                 }
-                if ((self.player.pathSegment.content.nothing = YES)) {
-                    self.player.health +=1;
-                    NSLog(@"You have recovered a bit! Health +1");
-                }
-                break;
+                
                 
             case MovementDirectionSide:
                 if (!self.player.pathSegment.sideBranch)
@@ -180,29 +238,64 @@
                 
                 if (self.player.pathSegment.sideBranch) {
                     int wealthGained = arc4random_uniform(16)+7;
-                    int healthLost = arc4random_uniform(22)+9;
+                    int healthLost = arc4random_uniform(22)+(self.player.healthCoefficient);
                     self.segmentsTravelled++;
                     self.player.pathSegment = self.player.pathSegment.sideBranch;
                     if ((self.player.pathSegment.content.treasure = YES)) {
-                        self.player.wealth += wealthGained;
-                        NSLog(@"You found some gold! Wealth +%d", wealthGained);
-                    }
-                    if ((self.player.pathSegment.content.creature = YES)) {
+                        if ((self.player.pathSegment.content.treasure = YES)) {
+                            NSString *userCommand = [self inputPrompt:@"You came across a treasure chest! type \"yes\" to open it it your hammer."];
+                            if ([userCommand isEqualToString:@"yes"]) {
+                                if (self.player.hammerDurability <= 0) {
+                                    NSLog(@"Your hammer is worn out, you have to just continue");
+                                }
+                                else {
+                                    self.player.wealth += wealthGained;
+                                    self.player.hammerDurability -= 1;
+                                    NSLog(@"You found some gold! Wealth +%d, your worn out your hammer a bit", wealthGained);
+                                }
+                            }
+                            self.player.wealth += wealthGained;
+                            NSLog(@"You found some gold! Wealth +%d", wealthGained);
+                        }
+                        if ((self.player.pathSegment.content.creature = YES)) {
+                            NSString *userCommand = [self inputPrompt:@"You came across a monster! Type \"yes\" to fight it with your hammer."];
+                            if ([userCommand isEqualToString:@"yes"]) {
+                                if (self.player.hammerDurability <= 0) {
+                                    NSLog(@"Your hammer is worn out, you've lost %d health trying to run from it.", healthLost);
+                                    self.player.health -=healthLost;
+                                }
+                                else {
+                                    self.player.hammerDurability -= 1;
+                                    NSLog(@"You defeated the monster, you've worn out your hammer a bit");
+                                }
+                            }
+                            
+                            else {
+                                self.player.health -=healthLost;
+                                NSLog(@"You encountered a monster! Health -%d", healthLost);}
+                            
+                        }
                         self.player.health -=healthLost;
                         NSLog(@"You encountered a monster! Health -%d", healthLost);
                     }
                     if ((self.player.pathSegment.content.nothing = YES)) {
-                        self.player.health +=1;
-                        NSLog(@"You have recovered a bit! Health +1");
+                        if ((self.player.vitalityPotion = YES)) {
+                            int r = arc4random_uniform(2);
+                            if (r == 0) {
+                                self.player.health +=1;
+                                NSLog(@"You have recovered a bit! Health +1");
+                            }
+                            
+                        }
+                        
+                    default:
+                        break;
                     }
                 }
-                
-            default:
-                break;
             }
     }
-    
 }
+
 
 -(NSString *)inputPrompt: (NSString *)prompt {
     char inputChar[100];
