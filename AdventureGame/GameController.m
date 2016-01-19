@@ -40,9 +40,9 @@
     PathSegment *mainBranchCursor = home; // primary
     PathSegment *sideBranchCursor = nil;
     
-    for (int i = 0; i < 100; i++) {
+    for (self.segmentsLaid = 0; self.segmentsLaid < 100; self.segmentsLaid++) {
         
-        PathSegmentContents *randContent = [self randomContentForI:i];
+        PathSegmentContents *randContent = [self randomContent];
         
         if (mainBranchCursor != nil) {
             // append to main branch
@@ -74,7 +74,7 @@
 }
 
 
--(PathSegmentContents *)randomContentForI:(int)i {
+-(PathSegmentContents *)randomContent {
     PathSegmentContents *generatedContent;
     int random = arc4random_uniform(99);
     if (random <20) {
@@ -86,13 +86,13 @@
             generatedContent.creature = YES;
         }
         
-        if (i == 50) {
+        if (self.segmentsLaid == 50) {
             generatedContent.merchant = YES;
         }
         int lowerbound = 50;
         int higherbound = 70;
         int rndvalue = lowerbound + arc4random() % (higherbound);
-        if (i == rndvalue) {
+        if (self.segmentsLaid == rndvalue) {
             generatedContent.crystal = YES;
         }
         
